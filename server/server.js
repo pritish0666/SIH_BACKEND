@@ -6,19 +6,15 @@ import { hashSync, compareSync } from 'bcrypt';
 import { UserModel, ngoModel, govtschemeModel, courseModel } from './config/database.js';
 import jwt from 'jsonwebtoken';
 import twilio from "twilio"
-// import path from "path"
 import bodyParser from "body-parser";
 import sendMail from "./helpers/sendMail.js";
-
+import './helpers/passport.js';
+import userOTP from "./helpers/sendMail.js"
 
 dotenv.config();
 const app = express();
 
-// import { fileURLToPath } from 'url';
-// import { dirname } from 'path';
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
 
 
 app.use(express.json());
@@ -26,29 +22,28 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 app.use(passport.initialize());
 app.use(bodyParser.json())
-app.set('view engine', 'ejs')
+// app.set('view engine', 'ejs')
 
 
 
-import './helpers/passport.js';
+
 
 app.use(express.json());
-
-
-// app.use('*', function(req,res){
-//   res.sendFile(path.join(__dirname, '../client/build/index.html' ))
-// })
 
 
 app.get('/', function (req, res) {
     res.send('Hello World!'); // This will serve your request to '/'.
   })
 
-app.get('/forgetpass', (req,res)=>{
 
-  res.render('otp.ejs')
-  sendMail
-})
+app.post('/forgetpass', async (req, res) => {
+    sendMail(req,res)
+    
+});
+
+// const generateOTP = () => {
+//     return Math.floor(100000 + Math.random() * 900000).toString();
+// };
 
 
 
@@ -57,11 +52,11 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
 
 app.post("/otp-sms", (req, res) => {
-  const phoneNumber = req.body.phoneNumber; // Assuming phoneNumber is sent in the request body
+  const phoneNumber = phoneNum; // Assuming phoneNumber is sent in the request body
 
   client.verify.services('VAfff8b99c6fc1016c88a4f4e76ec66cc7')
     .verifications
-    .create({ to: phoneNumber, channel: 'sms' })
+    .create({ to:phoneNumber , channel: 'sms' })
     .then(verification => {
       res.json({
         success: true,
@@ -80,7 +75,7 @@ app.post("/otp-sms", (req, res) => {
 
 
 app.post("/verify-code", (req, res) => {
-  const phoneNumber = req.body.phoneNumber; // Assuming phoneNumber is sent in the request body
+  const phoneNumber = phoneNUm; // Assuming phoneNumber is sent in the request body
   const verificationCode = req.body.verificationCode; // Assuming verificationCode is sent in the request body
 
   client.verify.services('VAfff8b99c6fc1016c88a4f4e76ec66cc7')
@@ -111,47 +106,16 @@ app.post("/verify-code", (req, res) => {
 
 
 
-app.post('/send-otp', async (req, res) => {
-  const apiKey = process.env.API_KEY;
-
-  const sendOTP = async (phoneNumber, otp) => {
-    const options = {
-      authorization: apiKey,
-      message: 'req.body.message',
-      numbers: [phoneNumber],
-    };
-    try {
-      const response = await fastTwoSMS.sendMessage(options);
-      console.log('OTP sent successfully:', response);
-    } catch (error) {
-      console.error('Error sending OTP:', error);
-    }
-  };
-
-  const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
-  const phoneNumber = req.body.number; 
-  const otp = generateOTP(); 
-
-  try {
-    await sendOTP(phoneNumber, otp);
-    res.status(200).json({ message: 'OTP sent successfully' });
-  } catch (error) {
-    console.error('Error sending OTP:', error);
-    res.status(500).json({ error: 'Failed to send OTP' });
-  }
-});
 
 
 
 
 
-
+let user
+let phoneNum
 
 app.post("/register", (req, res) => {
-  const user = new UserModel({
+   user = new UserModel({
     username: req.body.username,
     password: hashSync(req.body.password, 5),
 
@@ -177,31 +141,16 @@ app.post("/register", (req, res) => {
     },
     mentorsSubscribed: req.body.mentorsSubscribed,
 
-
-
-
-
   });
+  phoneNum=phone
 
-  user
-    .save()
-    .then((user) => {
-      res.send({
-        success: true,
-        message: "User registered successfully",
-        user: {
-          id: user._id,
-          username: user.username,
-        },
-      });
-    })
-    .catch((err) => {
-      res.send({
-        success: false,
-        message: "Something went wrong",
-        error: err,
-      });
-    });
+  res.redirect(307, '/otp-sms')
+  
+
+
+
+
+
 });
 
 
@@ -405,6 +354,39 @@ app.get('/protected', passport.authenticate('jwt', { session: false }), (req, re
     }
   });
 });
+
+
+
+app.post('/verify', async (req, res) => {
+    const givenOTP = req.body.otp;
+
+    if (givenOTP === userOTP) {
+        try {
+            const savedUser = await user.save(); // Assuming 'user' is the instance of UserModel
+            res.send({
+                success: true,
+                message: "User registered successfully",
+                user: {
+                    id: savedUser._id,
+                    username: savedUser.username,
+                },
+            });
+        } catch (err) {
+            res.send({
+                success: false,
+                message: "Something went wrong",
+                error: err,
+            });
+        }
+    } else {
+        res.send({
+            success: false,
+            message: "Invalid OTP",
+        });
+    }
+});
+
+  
 
 // Start the server
 app.listen(8080, () => {

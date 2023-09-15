@@ -1,13 +1,18 @@
 import nodemailer from 'nodemailer'
 
+let userOTP
+
 const sendMail =(req, res) => {
+
+    //const email_user = "pritishpatra06@gmail.com"
     
     const generateOTP = () => {
         return Math.floor(100000 + Math.random() * 900000).toString();
       };
 
 
-    const otp = generateOTP();
+    let otp = generateOTP();
+    userOTP=otp
 
     let transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -19,7 +24,7 @@ const sendMail =(req, res) => {
 
     let info = {
         from: 'pritishpatra29@gmail.com', // sender address
-        to: "abhijitbiswal1902@gmail.com,  pritishpatra06@gmail.com", // list of receivers
+        to: "pritishpatra06@gmail.com", // list of receivers
         subject: "OTP verification", // Subject line
         text: `Your OTP is ${otp}`, // plain text body
         
@@ -28,11 +33,17 @@ const sendMail =(req, res) => {
 
     transporter.sendMail(info,(err)=>{
         if(err){
-            console.log(err)
-        }else{
-            console.log("email sent !!!!")
+            console.log(err);
+            res.status(500).json({ success: false, message: "Error sending OTP" });
+        } else {
+            console.log("email sent !!!!");
+            res.json(info);
+            
         }
-    })
+    });
+    
+
+   
 
     console.log(info.messageId)
     res.json(info)
@@ -42,4 +53,59 @@ const sendMail =(req, res) => {
 
 
 
-export default sendMail
+export default {sendMail,userOTP}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+import nodemailer from 'nodemailer';
+
+const sendMail = (req,res,otp) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'pritishpatra29@gmail.com',
+            pass: 'bctplklpfpwzduhf'
+        }
+    });
+
+    const info = {
+        from: 'pritishpatra29@gmail.com',
+        to: "pritishpatra06@gmail.com",
+        subject: "OTP verification",
+        text: `Your OTP is ${otp}`
+    };
+
+    return new Promise((resolve, reject) => {
+        transporter.sendMail(info, (err, info) => {
+            if (err) {
+                console.error(err);
+                reject(err);
+            } else {
+                console.log("Email sent !!!!");
+                resolve(info);
+            }
+        });
+    });
+};
+
+export default sendMail;
+*/
