@@ -351,7 +351,7 @@ app.post("/login", (req, res) => {
     res.json({ message: 'Value received successfully' });
 
 
-  UserModel.findOne({ username: receivedValue.phone }).then(user => {
+  UserModel.findOne({ username: req.body.phone }).then(user => {
     if (!user) {
       return res.status(401).send({
         success: false,
@@ -359,7 +359,7 @@ app.post("/login", (req, res) => {
       });
     }
 
-    if (!compareSync(receivedValue.password, user.password)) {
+    if (!compareSync(req.body.password, user.password)) {
       return res.status(401).send({
         success: false,
         message: "Incorrect password"
@@ -370,7 +370,7 @@ app.post("/login", (req, res) => {
       id: user._id
     };
 
-    const token = jwt.sign(payload, "narcodes", { expiresIn: '9d' });
+    const token = jwt.sign(payload, "narcodes", { expiresIn: '180d' });
     return res.status(200).send({
       success: true,
       message: "Logged in successfully",
@@ -393,10 +393,10 @@ app.get('/protected', passport.authenticate('jwt', { session: false }), (req, re
 
 
 
-
+const PORT = process.env.PORT || 8080
 
 // Start the server
-app.listen(8080, () => {
+app.listen(PORT, () => {
   console.log("App running on port 8080");
 });
 
