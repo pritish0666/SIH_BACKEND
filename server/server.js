@@ -5,6 +5,7 @@ import passport from "passport";
 import { hashSync, compareSync } from 'bcrypt';
 import { UserModel, ngoModel, govtschemeModel, courseModel } from './config/database.js';
 import jwt from 'jsonwebtoken';
+import bcrypt from "bcrypt"
 import twilio from "twilio"
 import bodyParser from "body-parser";
 import sendMail from "./helpers/sendMail.js";
@@ -13,6 +14,7 @@ import userOTP from "./helpers/sendMail.js"
 
 dotenv.config();
 const app = express();
+
 
 
 
@@ -115,42 +117,67 @@ let user
 let phoneNum
 
 app.post("/register", (req, res) => {
+
+    // const receivedValue = req.body.value;
+    // console.log('Received value:', receivedValue);
+    // res.json({ message: 'Value received successfully' });
+    // const myPlaintextPassword = 'req.body.password';
+    // const saltRounds = 10;
+
+    // bcrypt.hashSync(myPlaintextPassword, saltRounds);
+
+    // const hashedPassword = bcrypt.hashSync(myPlaintextPassword, saltRounds)
+
+
+
    user = new UserModel({
     username: req.body.username,
-    password: hashSync(req.body.password, 5),
-
-
-
-
+    
+    password: req.body.password,
     name:req.body.name,
     email:req.body.email,
     phone:req.body.phone,
     gender:req.body.gender,
-    DOB:req.body.DOB,
-    lookingFor:req.body.lookingFor,
-    enrolledCourses:req.body.enrolledCourses,
-    NGOsApplied: req.body.NGOsApplied,
-    NGOsApproved: req.body.NGOsApproved,
-    language:req.body.language,
-    badges:req.body.badges,
-    location:req.body.location,
-    quizes:{
-      quizName:req.body.quizName,
-      completed:req.body.completed,
-      score:req.body.score,
-    },
-    mentorsSubscribed: req.body.mentorsSubscribed,
+    // DOB:req.body.DOB,
+    // lookingFor:req.body.lookingFor,
+    // enrolledCourses:req.body.enrolledCourses,
+    // NGOsApplied: req.body.NGOsApplied,
+    // NGOsApproved: req.body.NGOsApproved,
+    // language:req.body.language,
+    // badges:req.body.badges,
+    // location:req.body.location,
+    // quizes:{
+    //   quizName:req.body.quizName,
+    //   completed:req.body.completed,
+    //   score:req.body.score,
+    // },
+    // mentorsSubscribed: req.body.mentorsSubscribed,
 
   });
-  phoneNum=phone
+//   phoneNum=phone
 
-  res.redirect(307, '/otp-sms')
+user
+    .save()
+    .then((user) => {
+      return res.send({
+        success: true,
+        message: "User registered successfully",
+        user: {
+          id: user._id,
+          username: user.username,
+        },
+      });
+    })
+    .catch((err) => {
+      return res.send({
+        success: false,
+        message: "Something went wrong",
+        error: err,
+      });
+    });
+
+//   res.redirect(307, '/otp-sms')
   
-
-
-
-
-
 });
 
 
@@ -316,7 +343,13 @@ app.post("/govtregister", (req, res) => {
 
 // User login
 app.post("/login", (req, res) => {
-  UserModel.findOne({ username: req.body.username }).then(user => {
+
+    const receivedValue = req.body.value;
+    console.log('Received value:', receivedValue);
+    res.json({ message: 'Value received successfully' });
+
+
+  UserModel.findOne({ username: receivedValue.phone }).then(user => {
     if (!user) {
       return res.status(401).send({
         success: false,
@@ -324,7 +357,7 @@ app.post("/login", (req, res) => {
       });
     }
 
-    if (!compareSync(req.body.password, user.password)) {
+    if (!compareSync(receivedValue.password, user.password)) {
       return res.status(401).send({
         success: false,
         message: "Incorrect password"
@@ -357,38 +390,13 @@ app.get('/protected', passport.authenticate('jwt', { session: false }), (req, re
 
 
 
-app.post('/verify', async (req, res) => {
-    const givenOTP = req.body.otp;
 
-    if (givenOTP === userOTP) {
-        try {
-            const savedUser = await user.save(); // Assuming 'user' is the instance of UserModel
-            res.send({
-                success: true,
-                message: "User registered successfully",
-                user: {
-                    id: savedUser._id,
-                    username: savedUser.username,
-                },
-            });
-        } catch (err) {
-            res.send({
-                success: false,
-                message: "Something went wrong",
-                error: err,
-            });
-        }
-    } else {
-        res.send({
-            success: false,
-            message: "Invalid OTP",
-        });
-    }
-});
 
-  
 
 // Start the server
 app.listen(8080, () => {
   console.log("App running on port 8080");
 });
+
+
+
