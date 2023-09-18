@@ -144,9 +144,27 @@ app.post("/register", (req, res) => {
     mentorsSubscribed: req.body.mentorsSubscribed,
 
   });
-  phoneNum=phone
+  // phoneNum=phone
 
-  res.redirect(307, '/otp-sms')
+  // res.redirect(307, '/otp-sms')
+
+    user
+    .save()
+    .then((user) => {
+      res.send({
+        name:req.body.name,
+        username:req.body.username,
+        password:req.body.password
+
+      });
+    })
+    .catch((err) => {
+      res.send({
+        success: false,
+        message: "Something went wrong",
+        error: err,
+      });
+    });
   
 
 
