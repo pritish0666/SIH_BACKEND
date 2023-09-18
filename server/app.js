@@ -79,7 +79,7 @@ app.post("/otp-sms", (req, res) => {
 
 
 app.post("/verify-code", (req, res) => {
-  const phoneNumber = phoneNUm; // Assuming phoneNumber is sent in the request body
+  const phoneNumber = phoneNum; // Assuming phoneNumber is sent in the request body
   const verificationCode = req.body.verificationCode; // Assuming verificationCode is sent in the request body
 
   client.verify.services('VAfff8b99c6fc1016c88a4f4e76ec66cc7')
@@ -135,7 +135,7 @@ app.post("/register", (req, res) => {
    user = new UserModel({
     username: req.body.username,
     
-    password: req.body.password,
+    password:hashSync(req.body.password,5),
     name:req.body.name,
     email:req.body.email,
     phone:req.body.phone,
@@ -346,12 +346,12 @@ app.post("/govtregister", (req, res) => {
 // User login
 app.post("/login", (req, res) => {
 
-    const receivedValue = req.body.value;
-    console.log('Received value:', receivedValue);
-    res.json({ message: 'Value received successfully' });
+    // const receivedValue = req.body.value;
+    // console.log('Received value:', receivedValue);
+    // res.json({ message: 'Value received successfully' });
 
 
-  UserModel.findOne({ username: req.body.phone }).then(user => {
+  UserModel.findOne({ username: req.body.username }).then(user => {
     if (!user) {
       return res.status(401).send({
         success: false,
@@ -397,7 +397,7 @@ const PORT = process.env.PORT || 8080
 
 // Start the server
 app.listen(PORT, () => {
-  console.log("App running on port 8080");
+  console.log(`App running on port ${PORT}`);
 });
 
 
