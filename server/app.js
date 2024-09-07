@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 app.use(passport.initialize());
 app.use(bodyParser.json())
-// app.set('view engine', 'ejs')
+
 
 
 
@@ -36,7 +36,7 @@ app.use(express.json());
 
 
 app.get('/', function (req, res) {
-    res.send('hiii'); // This will serve your request to '/'.
+    res.send('hiii'); 
   })
 
 
@@ -45,9 +45,6 @@ app.post('/forgetpass', async (req, res) => {
     
 });
 
-// const generateOTP = () => {
-//     return Math.floor(100000 + Math.random() * 900000).toString();
-// };
 
 
 
@@ -56,7 +53,7 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
 
 app.post("/otp-sms", (req, res) => {
-  const phoneNumber = phoneNum; // Assuming phoneNumber is sent in the request body
+  const phoneNumber = phoneNum; 
 
   client.verify.services('VAfff8b99c6fc1016c88a4f4e76ec66cc7')
     .verifications
@@ -79,8 +76,8 @@ app.post("/otp-sms", (req, res) => {
 
 
 app.post("/verify-code", (req, res) => {
-  const phoneNumber = phoneNum; // Assuming phoneNumber is sent in the request body
-  const verificationCode = req.body.verificationCode; // Assuming verificationCode is sent in the request body
+  const phoneNumber = phoneNum; 
+  const verificationCode = req.body.verificationCode; 
 
   client.verify.services('VAfff8b99c6fc1016c88a4f4e76ec66cc7')
     .verificationChecks
@@ -120,16 +117,7 @@ let phoneNum
 
 app.post("/register", (req, res) => {
 
-    // const receivedValue = req.body.value;
-    // console.log('Received value:', receivedValue);
-    // res.json({ message: 'Value received successfully' });
-    // const myPlaintextPassword = 'req.body.password';
-    // const saltRounds = 10;
-
-    // bcrypt.hashSync(myPlaintextPassword, saltRounds);
-
-    // const hashedPassword = bcrypt.hashSync(myPlaintextPassword, saltRounds)
-
+    
 
 
    user = new UserModel({
@@ -140,21 +128,7 @@ app.post("/register", (req, res) => {
     email:req.body.email,
     phone:req.body.phone,
     gender:req.body.gender,
-    // DOB:req.body.DOB,
-    // lookingFor:req.body.lookingFor,
-    // enrolledCourses:req.body.enrolledCourses,
-    // NGOsApplied: req.body.NGOsApplied,
-    // NGOsApproved: req.body.NGOsApproved,
-    // language:req.body.language,
-    // badges:req.body.badges,
-    // location:req.body.location,
-    // quizes:{
-    //   quizName:req.body.quizName,
-    //   completed:req.body.completed,
-    //   score:req.body.score,
-    // },
-    // mentorsSubscribed: req.body.mentorsSubscribed,
-
+    
   });
 
 //   phoneNum=phone
@@ -220,7 +194,7 @@ app.post("/course", (req, res) => {
 });
 
 
-//ngoregister
+
 app.post("/ngoregister", (req, res) => {
   const ngo = new ngoModel({
     code:req.body.code,
@@ -251,7 +225,7 @@ app.post("/ngoregister", (req, res) => {
     });
 });
 
-// Assuming ngoModel is already defined
+
 
 app.get("/govs", async (req, res) => {
   try {
@@ -345,10 +319,6 @@ app.post("/govtregister", (req, res) => {
 
 // User login
 app.post("/login", (req, res) => {
-
-    // const receivedValue = req.body.value;
-    // console.log('Received value:', receivedValue);
-    // res.json({ message: 'Value received successfully' });
 
 
   UserModel.findOne({ username: req.body.username }).then(user => {
